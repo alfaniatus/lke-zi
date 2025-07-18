@@ -17,7 +17,19 @@ class ManagerAreaController extends Controller
             'role' => 'manager',
             'areaUser' => $user->area,
             'areaId' => $user->area_id,
-            'currentKategori' => $request->kategori
+            'currentKategori' => $request->kategori,
         ]);
     }
-}
+    public function hasil(Request $request)
+    {
+        $user = Auth::user();
+
+        return view('manager-area.hasil.index', [
+            'routeName' => 'manager-area.hasil',
+            'role' => 'manager',
+            'areaUser' => $user->area,
+            'areaId' => $user->area_id,
+            'currentKategori' => $request->kategori,
+        ]);
+    }
+} 

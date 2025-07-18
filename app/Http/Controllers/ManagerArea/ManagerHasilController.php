@@ -5,99 +5,92 @@ namespace App\Http\Controllers\ManagerArea;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\JawabanIndikator;
-use App\Models\Periode;
 
-class ManagerJawabanController extends Controller
+class ManagerHasilController extends Controller
 {
-    public function store(Request $request)
+    public function index()
     {
-        $validated = $request->validate(
-            [
-                'jawaban' => 'required|array',
-                'bukti' => 'required|array',
-                'link' => 'nullable|array',
-                'nilai' => 'nullable|array',
-                'persen' => 'nullable|array',
-                'catatan' => 'nullable|array',
-            ],
-            [
-                'bukti.required' => 'Setiap indikator wajib diisi bukti.',
-            ],
-        );
+        $areaId = auth()->user()->area_id;
 
-        $areaId = $request->input('area_id');
-        $kategori = $request->input('kategori');
-        $periode = Periode::orderByDesc('tahun')->first();
-        $userId = auth()->id();
-
-        foreach ($validated['jawaban'] as $indikatorId => $jawab) {
-            JawabanIndikator::updateOrCreate(
-                [
-                    'indikator_id' => $indikatorId,
-                    'periode_id' => $periode->id,
-                    'user_id' => $userId,
-                ],
-                [
-                    'jawaban' => $jawab,
-                    'nilai' => $validated['nilai'][$indikatorId] ?? 0,
-                    'persen' => $validated['persen'][$indikatorId] ?? 0,
-                    'catatan' => $validated['catatan'][$indikatorId] ?? null,
-                    'bukti' => $validated['bukti'][$indikatorId] ?? '-',
-                    'link' => $validated['link'][$indikatorId] ?? null,
-                    'user_id' => $userId,
-
-                ]
-            );
-        }
-
-        return redirect()
-            ->route('manager-area.jawaban.preview', [
-                'area' => $areaId,
-                'kategori' => $kategori,
-            ])
-            ->with('success', 'Jawaban berhasil disimpan.');
-    }
-
-    public function preview($area, $kategori)
-    {
-        $periode = Periode::orderByDesc('tahun')->first();
-        $userId = auth()->id();
-
-        $jawabans = JawabanIndikator::with('indikator')
-            ->where('periode_id', $periode->id)
-            ->where('user_id', $userId)
-            ->whereHas('indikator', function ($query) use ($area, $kategori) {
-                $query->where('area_id', $area)
-                      ->where('kategori', $kategori);
-            })
+        $jawabans = JawabanIndikator::with('indikator.opsiJawaban')
+            ->whereHas('indikator', fn($q) => $q->where('area_id', $areaId))
             ->get();
 
-        return view('manager-area.jawaban.preview', [
-            'jawabans' => $jawabans,
-            'periode' => $periode,
-            'areaId' => $area,
-            'currentKategori' => $kategori,
-        ]);
+        return view('manager-area.hasil.index', [
+    'jawabans' => $jawabans,
+    'currentKategori' => 'hasil',
+]);
+
+        
     }
 
-    public function submitJawaban($area, $kategori, Request $request)
+    public function edit($id)
+{
+    $jawaban = JawabanIndikator::with('indikator.opsiJawaban')->findOrFail($id);
+
+    if (auth()->user()->area_id != $jawaban->indikator->area_id) {
+        abort(403, 'Akses ditolak.');
+    }
+
+    if ($jawaban->status_validasi !== 'ditolak') {
+        return redirect()->route('manager-area.hasil.index')
+            ->with('error', 'Jawaban ini tidak perlu diedit.');
+    }
+
+
+    return view('manager-area.hasil.edit', [
+        'jawaban' => $jawaban,
+        'currentKategori' => 'hasil',
+    ]);
+}
+
+
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'jawaban' => 'string',
+        'catatan' => 'nullable|string|max:1000',
+        'bukti'   => 'nullable|string|max:255',
+        'link'    => 'nullable|string|max:255',
+    ]);
+
+    $jawaban = JawabanIndikator::findOrFail($id);
+
+    if (auth()->user()->area_id != $jawaban->indikator->area_id) {
+        abort(403, 'Akses ditolak.');
+    }
+
+
+    $jawaban->catatan         = $request->catatan;
+    $jawaban->bukti           = $request->bukti;
+    $jawaban->link            = $request->link;
+    $jawaban->status_validasi = 'pending';
+    $jawaban->submit_ulang    = true;
+
+    $jawaban->save();
+
+    return redirect()->route('manager-area.hasil.index')
+        ->with('success', 'Perbaikan berhasil disimpan. Silakan kirim ulang ke admin.');
+}
+
+
+    public function submitUlang($id)
     {
-        $userId = auth()->id();
-        $periodeId = $request->input('periode_id');
+        $jawaban = JawabanIndikator::findOrFail($id);
 
-        JawabanIndikator::where('user_id', $userId)
-            ->where('periode_id', $periodeId)
-            ->whereHas('indikator', function ($q) use ($area, $kategori) {
-                $q->where('area_id', $area)
-                  ->where('kategori', $kategori);
-            })
-            ->update(['is_submitted' => true]);
+        if (auth()->user()->area_id != $jawaban->indikator->area_id) {
+            abort(403);
+        }
 
-        return redirect()
-            ->route('manager-area.indikator.index', [
-                'area' => $area,
-                'kategori' => $kategori,
-            ])
-            ->with('success', 'Jawaban berhasil dikirim untuk divalidasi admin.');
+        if ($jawaban->status_validasi === 'pending' && $jawaban->submit_ulang) {
+            $jawaban->submit_ulang = false;
+            $jawaban->save();
+
+            return redirect()->route('manager-area.hasil.index')
+                ->with('success', 'Jawaban berhasil dikirim ulang ke admin.');
+        }
+
+        return redirect()->route('manager-area.hasil.index')
+            ->with('error', 'Jawaban tidak bisa dikirim ulang.');
     }
 }

@@ -9,10 +9,16 @@ class RoleMiddleware
 {
     public function handle($request, Closure $next, $role)
     {
-        if (!Auth::check() || !$request->user()->hasRole($role)) {
-            abort(403, 'Unauthorized.');
+        // if (Auth::check() || !$request->user()->hasRole($role)) {
+        //     abort(403, 'Unauthorized.');
+        // }
+
+        // return $next($request);
+
+        if(Auth::check() && Auth::user()->role === $role) {
+            return $next($request);
         }
 
-        return $next($request);
+        abort(403, 'Unauthorized.');
     }
 }

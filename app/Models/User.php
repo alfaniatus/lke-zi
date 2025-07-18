@@ -19,6 +19,17 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+    
+    const ROLE_ADMIN = 'admin';
+    const ROLE_MANAGER = 'manager';
+
+    public function isAdmin() {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isManager() {
+        return $this->role === self::ROLE_MANAGER;
+    }
     public function area()
 {
     return $this->belongsTo(\App\Models\Area::class);

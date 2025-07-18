@@ -30,8 +30,5 @@
 
         {{-- Hasil --}}
         @include('components.sidebar.hasil')
-
-        {{-- Validasi --}}
-        @include('components.sidebar.validasi')
     </nav>
 </aside>

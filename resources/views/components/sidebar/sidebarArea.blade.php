@@ -1,4 +1,4 @@
-<!-- Area 1 -->
+<!-- Area 1
 <details class="group" {{ request('area') == 1 && in_array($currentKategori, ['pemenuhan', 'reform']) ? 'open' : '' }}>
     <summary
         class="flex w-fit cursor-pointer items-center rounded-lg px-6 py-2 text-[#374957] hover:bg-[#146082] hover:text-white">
@@ -422,4 +422,4 @@
             </a>
         </li>
     </ul>
-</details>
+</details> -->

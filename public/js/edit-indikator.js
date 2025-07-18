@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const formElement = document.querySelector('form');
     const subAreaIdLama = parseInt(formElement?.dataset.subareaId || 0);
 
-    // ✅ Dapatkan index opsi terakhir dari value tersembunyi (misal A, B, C)
     function getLastOpsiIndex() {
         const inputs = document.querySelectorAll('[name^="opsi["][name$="[opsi]"]');
         let lastIndex = -1;
@@ -25,14 +24,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let opsiCount = getLastOpsiIndex();
 
-    // ✅ Tampilkan/sembunyikan bagian opsi sesuai tipe jawaban
     function toggleOpsiAbcde() {
-        const isAbcde = tipeJawabanSelect.value === 'abcde';
+        const tipe = tipeJawabanSelect.value;
+        const isAbcde = tipe === 'abcde';
+
         opsiAbcdeDiv.classList.toggle('hidden', !isAbcde);
         if (tambahOpsiWrapper) tambahOpsiWrapper.classList.toggle('hidden', !isAbcde);
     }
 
-    // ✅ Ganti sub area sesuai area
     function updateSubAreas() {
         const selectedOption = areaSelect.options[areaSelect.selectedIndex];
         const subAreas = JSON.parse(selectedOption.getAttribute('data-subareas') || '[]');
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ✅ Tambah opsi baru dengan huruf berurutan
     if (tambahOpsiBtn) {
         tambahOpsiBtn.addEventListener('click', () => {
             if (opsiCount >= abjad.length) return;
@@ -69,11 +67,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             opsiAbcdeDiv.appendChild(wrapper);
             opsiCount++;
-            hitungTotalBobot(); // update total bobot setelah tambah
+            hitungTotalBobot();
         });
     }
 
-    // ✅ Hitung total bobot secara realtime
     function hitungTotalBobot() {
         const bobotInputs = document.querySelectorAll('[name^="opsi["][name$="[bobot]"]');
         let total = 0;
@@ -86,14 +83,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ✅ Event listener perubahan bobot
     document.addEventListener('input', function (e) {
         if (e.target.name?.includes('[bobot]')) {
             hitungTotalBobot();
         }
     });
 
-    // Inisialisasi awal
     toggleOpsiAbcde();
     updateSubAreas();
     hitungTotalBobot();

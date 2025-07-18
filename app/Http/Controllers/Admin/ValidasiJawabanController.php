@@ -15,6 +15,7 @@ class ValidasiJawabanController extends Controller
         $periodeId = $request->input('periode_id');
         $areaId = $request->input('area_id');
         $kategori = $request->input('kategori');
+        $statusValidasi = $request->input('status_validasi');
 
         $jawabans = JawabanIndikator::with([
                 'indikator.opsiJawaban',
@@ -22,6 +23,19 @@ class ValidasiJawabanController extends Controller
                 'indikator.subArea'
             ])
             ->where('is_submitted', true)
+            ->when($statusValidasi === 'pending', function ($query) {
+                $query->where('status_validasi', 'pending');
+            })
+            ->when($statusValidasi === 'ditolak', function ($query) {
+                $query->where('status_validasi', 'ditolak');
+            })
+            ->when($statusValidasi === 'diterima', function ($query) {
+                $query->where('status_validasi', 'diterima');
+            })
+            // Default: tampilkan jawaban yang belum validasi (pending) atau ditolak
+            ->when(!$statusValidasi, function ($query) {
+                $query->whereIn('status_validasi', ['pending', 'ditolak']);
+            })
             ->when($periodeId, function ($query) use ($periodeId) {
                 $query->whereHas('indikator.periodes', function ($periodeQuery) use ($periodeId) {
                     $periodeQuery->where('periodes.id', $periodeId);
@@ -42,8 +56,11 @@ class ValidasiJawabanController extends Controller
         $periodes = Periode::orderByDesc('tahun')->get();
         $areas = Area::all();
         $kategoris = ['pemenuhan', 'reform'];
+        $statusOptions = ['pending', 'diterima', 'ditolak'];
 
-        return view('admin.validasi.index', compact('jawabans', 'periodes', 'areas', 'kategoris'));
+        return view('admin.validasi.index', compact(
+            'jawabans', 'periodes', 'areas', 'kategoris', 'statusOptions'
+        ));
     }
 
     public function simpan(Request $request)
@@ -53,12 +70,13 @@ class ValidasiJawabanController extends Controller
         foreach ($data as $jawabanId => $item) {
             $jawaban = JawabanIndikator::find($jawabanId);
             if ($jawaban) {
-                $jawaban->status_validasi = $item['status'] ?? 'pending';
+                $jawaban->status_validasi = $item['status'] ?? null;
                 $jawaban->catatan_admin = $item['catatan'] ?? null;
                 $jawaban->save();
             }
         }
 
-        return redirect()->route('admin.validasi.index')->with('success', 'semua data berhasil divalidasi.');
+        return redirect()->route('admin.validasi.index')
+            ->with('success', 'Semua data berhasil divalidasi.');
     }
 }

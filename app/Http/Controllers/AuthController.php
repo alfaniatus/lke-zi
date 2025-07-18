@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -14,24 +13,26 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-        
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $role = $user->getRoleNames()->first();
+{
+    $credentials = $request->only('email', 'password');
+    
+    if (Auth::attempt($credentials)) {
+        $user = Auth::user();
+        $role = $user->role;
 
-            if ($role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            } elseif (str_starts_with($role, 'area')) {
-                return redirect()->route('manager-area.dashboard', ['area' => $role]);
-            }
-
-            return redirect('/');
+        if ($role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($role === 'manager') {
+            return redirect()->route('manager-area.dashboard'); 
         }
 
-        return back()->withErrors(['email' => 'Login gagal. Email atau password salah.']);
+        Auth::logout();
+        return redirect('/login')->withErrors(['email' => 'Role tidak dikenali.']);
     }
+
+    return back()->withErrors(['email' => 'Login gagal. Email atau password salah.']);
+}
+
 
     public function logout()
     {

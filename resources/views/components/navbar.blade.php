@@ -6,16 +6,19 @@
                 fill="#374957" />
         </svg>
         <!-- Tombol Hai Admin -->
-        <button onclick="toggleLogoutDropdown()" class="font-semibold text-[#374957] relative focus:outline-none">
-    Hai, 
-    @if ($role === 'admin')
-        Admin
-    @elseif (str_starts_with($role, 'area'))
-        Area {{ strtoupper(str_replace('area', '', $role)) }}
-    @else
-        {{ ucfirst($role ?? 'User') }}
-    @endif
-</button>
+      @if (Auth::check())
+    <button onclick="toggleLogoutDropdown()" class="font-semibold text-[#374957] relative focus:outline-none">
+        Hai,
+        @if ($role === 'admin')
+            Ketua ZI
+        @elseif ($role === 'manager')
+           Manager Area {{ $areaUser }}
+        @else
+            {{ ucfirst($role ?? 'User') }}
+        @endif
+    </button>
+@endif
+
         <!-- Dropdown Logout -->
         <div id="logoutDropdown" class="hidden absolute right-10 top-16 w-28 -mt-1 bg-[#374957] shadow-lg rounded-md z-50">
             <form method="POST" action="{{ route('logout') }}">

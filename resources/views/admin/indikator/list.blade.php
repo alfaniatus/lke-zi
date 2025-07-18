@@ -5,15 +5,19 @@
         <h2 class="text-xl font-bold mb-4">Daftar Indikator Belum Dipublish</h2>
 
         @if (session('success'))
-            <div class="mb-4 text-red-400">{{ session('success') }}</div>
+            <div class="mb-4 text-green-600">{{ session('success') }}</div>
         @endif
 
-        <a href="{{ route('indikator.create') }}" class=" bg-green-600 text-white px-4 py-2 rounded mb-4 inline-block">+
-            Tambah Indikator</a>
+        <div class="flex justify-end mb-4">
+            <a href="{{ route('indikator.create') }}"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                + Tambah Indikator
+            </a>
+        </div>
 
         <table class="w-full table-auto border-collapse">
             <thead>
-                <tr class="bg-gray-200">
+                <tr class="bg-gray-100">
                     <th class="border px-4 py-2">Area</th>
                     <th class="border px-4 py-2">Sub Area</th>
                     <th class="border px-4 py-2">Kategori</th>
@@ -32,9 +36,9 @@
                         <td class="border px-4 py-2">{{ ucfirst($indikator->kategori) }}</td>
                         <td class="border px-4 py-2">{{ $indikator->nama_indikator }}</td>
                         <td class="border px-4 py-2">{{ $indikator->pertanyaan }}</td>
-                        <td class="border px-4 py-2">{{ strtoupper($indikator->tipe_jawaban) }}</td>
+                        <td class="border px-4 py-2">{{ $indikator->tipe_jawaban }}</td>
                         <td class="border px-4 py-2 text-center">
-                            @if(!$indikator->is_published)
+                            @if ($indikator->status !== 'published')
                                 <form action="{{ route('indikator.toggle-publish', $indikator->id) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
@@ -48,6 +52,7 @@
                                     Published
                                 </span>
                             @endif
+                        </td>
                         <td class="border px-4 py-2">
                             <div class="flex justify-center space-x-2">
                                 {{-- Tombol Edit --}}

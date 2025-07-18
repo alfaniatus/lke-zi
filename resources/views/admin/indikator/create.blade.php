@@ -2,9 +2,13 @@
 
 @section('content')
     <div class="relative mb-4">
+        <a href="{{ route('indikator.index') }}"
+            class="absolute right-36 -top-2 text-sm bg-green-200 hover:bg-green-400 text-gray-700 px-3 py-2 rounded-md transition mr-4">
+            List Indikator
+        </a>
         <a href="{{ route('indikator.template') }}"
-            class="absolute right-0 -top-2 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded border border-gray-300 transition mr-4">
-            Gunakan Template →
+            class="absolute right-0 -top-2 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-2 rounded-md transition mr-4">
+            Gunakan Template
         </a>
     </div>
 
@@ -13,34 +17,17 @@
 
         <form action="{{ route('indikator.store') }}" method="POST">
             @csrf
-            {{-- PERIODE & KATEGORI --}}
-            @if (request()->filled('periode_id') && request()->filled('kategori') && request('from_template') == 1)
-                <input type="hidden" name="periode_id" value="{{ request('periode_id') }}">
-                <input type="hidden" name="kategori" value="{{ request('kategori') }}">
-                <input type="hidden" name="from_template" value="1">
-            @else
-                <div class="mb-4">
-                    <label for="periode_id" class="block font-semibold">Periode</label>
-                    <select name="periode_id" id="periode_id" class="w-full border border-gray-300 rounded p-2" required>
-                        <option value="">-- Pilih Periode --</option>
-                        @foreach ($periodes as $periode)
-                            <option value="{{ $periode->id }}" {{ old('periode_id') == $periode->id ? 'selected' : '' }}>
-                                {{ $periode->nama }} ({{ $periode->tahun }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+            <input type="hidden" name="periode_id" value="{{ $masterPeriode->id }}">
 
-                <div class="mb-4">
-                    <label for="kategori" class="block font-semibold">Kategori</label>
-                    <select name="kategori" id="kategori" class="w-full border border-gray-300 rounded p-2" required>
-                        <option value="">-- Pilih Kategori --</option>
-                        <option value="reform" {{ old('kategori') == 'reform' ? 'selected' : '' }}>Reform</option>
-                        <option value="pemenuhan" {{ old('kategori') == 'pemenuhan' ? 'selected' : '' }}>Pemenuhan</option>
-                    </select>
-                </div>
-            @endif
-
+            {{-- KATEGORI --}}
+            <div class="mb-4">
+                <label for="kategori" class="block font-semibold">Kategori</label>
+                <select name="kategori" id="kategori" class="w-full border border-gray-300 rounded p-2" required>
+                    <option value="">-- Pilih Kategori --</option>
+                    <option value="reform" {{ old('kategori') == 'reform' ? 'selected' : '' }}>Reform</option>
+                    <option value="pemenuhan" {{ old('kategori') == 'pemenuhan' ? 'selected' : '' }}>Pemenuhan</option>
+                </select>
+            </div>
 
             {{-- AREA --}}
             <div class="mb-4">
@@ -83,6 +70,7 @@
                     <option value="">-- Pilih Tipe Jawaban --</option>
                     <option value="ya/tidak">Ya / Tidak</option>
                     <option value="abcde">A - E</option>
+                    <option value="esai">Esai</option> 
                 </select>
             </div>
 
@@ -90,11 +78,9 @@
             <div id="opsi-container" class="mb-4 hidden">
                 <label class="block font-semibold">Opsi Jawaban</label>
                 <div id="opsi-wrapper"></div>
-                <button type="button" id="tambah-opsi" class="mt-2 bg-gray-200 px-3 py-1 rounded">+ Tambah
-                    Opsi</button>
+                <button type="button" id="tambah-opsi" class="mt-2 bg-gray-200 px-3 py-1 rounded">+ Tambah Opsi</button>
             </div>
 
-            {{-- BUTTON --}}
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>
         </form>
     </div>
@@ -108,8 +94,9 @@
             const opsiContainer = document.getElementById('opsi-container');
             const opsiWrapper = document.getElementById('opsi-wrapper');
             const tambahOpsiBtn = document.getElementById('tambah-opsi');
+
             let kodeIndex = 0;
-            const kodeList = ['A', 'B', 'C', 'D', 'E'];
+            const kodeList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
             areaSelect.addEventListener('change', function() {
                 const selected = this.options[this.selectedIndex];
@@ -137,12 +124,13 @@
                 if (kodeIndex >= kodeList.length) return;
                 const kode = kodeList[kodeIndex++];
                 const field = `
-                <div class="mb-2">
-                    <label class="block font-semibold">${kode}</label>
-                    <input type="hidden" name="opsi_jawaban[${kode}][kode]" value="${kode}">
-                    <input type="text" name="opsi_jawaban[${kode}][teks]" class="w-full border rounded p-1 mb-1" placeholder="Teks jawaban ${kode}">
-                    <input type="number" step="0.01" name="opsi_jawaban[${kode}][bobot]" class="w-full border rounded p-1" placeholder="Bobot jawaban ${kode}">
-                </div>`;
+                    <div class="mb-2">
+                        <label class="block font-semibold">Opsi ${kode}</label>
+                        <input type="hidden" name="opsi_jawaban[${kode}][kode]" value="${kode}">
+                        <input type="text" name="opsi_jawaban[${kode}][teks]" class="w-full border rounded p-1 mb-1" placeholder="Teks jawaban ${kode}" required>
+                        <input type="number" step="0.01" name="opsi_jawaban[${kode}][bobot]" class="w-full border rounded p-1" placeholder="Bobot jawaban ${kode}" required>
+                    </div>
+                `;
                 opsiWrapper.insertAdjacentHTML('beforeend', field);
             });
         });
