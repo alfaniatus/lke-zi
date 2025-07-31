@@ -63,20 +63,35 @@ class ValidasiJawabanController extends Controller
         ));
     }
 
-    public function simpan(Request $request)
-    {
-        $data = $request->input('validasi', []);
+   public function simpan(Request $request)
+{
+    $data = $request->input('validasi', []);
+    $errors = [];
 
-        foreach ($data as $jawabanId => $item) {
-            $jawaban = JawabanIndikator::find($jawabanId);
-            if ($jawaban) {
-                $jawaban->status_validasi = $item['status'] ?? null;
-                $jawaban->catatan_admin = $item['catatan'] ?? null;
-                $jawaban->save();
+    foreach ($data as $jawabanId => $item) {
+        $jawaban = JawabanIndikator::find($jawabanId);
+        if ($jawaban) {
+            $status = $item['status'] ?? null;
+            $catatan = $item['catatan'] ?? null;
+
+            if ($status === 'ditolak' && (!preg_match('/[a-zA-Z]{5,}/', $catatan))) {
+                $errors[] = "Catatan untuk jawaban ID $jawabanId harus berisi minimal 5 huruf alfabet.";
+                continue;
             }
-        }
 
-        return redirect()->route('admin.validasi.index')
-            ->with('success', 'Semua data berhasil divalidasi.');
+            $jawaban->status_validasi = $status;
+            $jawaban->catatan_admin = $catatan;
+            $jawaban->save();
+        }
     }
+
+    if (!empty($errors)) {
+        return redirect()->back()->withErrors($errors)->withInput();
+    }
+
+    return redirect()->route('admin.validasi.index')
+        ->with('success', 'Semua data berhasil divalidasi.');
+}
+
+
 }

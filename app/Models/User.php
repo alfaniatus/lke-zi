@@ -10,7 +10,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'email', 'password', 'role', 'area_id',
