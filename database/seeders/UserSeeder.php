@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
             $user = User::updateOrCreate(
                 ['email' => "area$i@zi.com"],
                 [
-                    'password' => Hash::make("area$i"),
+                    'password' => Hash::make("area@zi$i"),
                     'role' => 'manager',
                     'area_id' => $area->id
                 ]

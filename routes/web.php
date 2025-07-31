@@ -11,10 +11,17 @@ use App\Http\Controllers\ManagerArea\ManagerJawabanController;
 use App\Http\Controllers\Admin\TemplateController;
 use App\Http\Controllers\Admin\ValidasiJawabanController;
 use App\Http\Controllers\ManagerArea\ManagerHasilController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/forgot-password', [ResetPasswordController::class, 'create'])->name('password.request');
+Route::post('/forgot-password', [ResetPasswordController::class, 'store'])->name('password.email');
+
+Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.update');
 
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')

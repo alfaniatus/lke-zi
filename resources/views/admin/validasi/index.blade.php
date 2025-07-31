@@ -65,7 +65,7 @@
         </form>
 
         {{-- Tabel --}}
-        <form method="POST" action="{{ route('admin.validasi.simpan') }}">
+        <form method="POST" action="{{ route('admin.validasi.simpan') }}" id="validasiForm">
             @csrf
             <div class="overflow-x-auto bg-white shadow rounded-lg p-4">
                 <table class="min-w-full table-auto border text-left text-sm">
@@ -126,6 +126,10 @@
                                     <textarea
                                         class="catatan-field border rounded px-2 py-1 text-sm mt-1 w-full {{ $jawaban->status_validasi === 'ditolak' ? '' : 'hidden' }}"
                                         name="validasi[{{ $jawaban->id }}][catatan]" data-id="{{ $jawaban->id }}" placeholder="Tambahkan Catatan">{{ $jawaban->catatan_admin }}</textarea>
+                                    <small class="text-red-600 text-xs mt-1 hidden error-msg"
+                                        data-id="{{ $jawaban->id }}">
+                                        Catatan minimal 5 karakter.
+                                    </small>
                                 </td>
                             </tr>
                         @empty
@@ -166,5 +170,27 @@
                 }
             });
         });
+
+         document.getElementById('validasiForm').addEventListener('submit', function(e) {
+        let valid = true;
+        let pesan = '';
+
+        document.querySelectorAll('.status-select').forEach(select => {
+            const id = select.dataset.id;
+            const textarea = document.querySelector(`.catatan-field[data-id="${id}"]`);
+            if (select.value === 'ditolak') {
+                const isi = textarea.value.trim();
+                if (isi.length < 5) {
+                    valid = false;
+                    pesan = 'tambahkan minimal 5 karakter di catatan.';
+                }
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            alert(pesan);
+        }
+    });
     </script>
 @endsection
