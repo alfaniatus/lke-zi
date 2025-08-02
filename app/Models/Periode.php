@@ -10,7 +10,9 @@ class Periode extends Model
 
     public function indikators()
     {
-        return $this->hasMany(Indikator::class);
+        return $this->belongsToMany(Indikator::class, 'indikator_periode')
+                ->withPivot('published')
+                ->withTimestamps();
     }
 }
 

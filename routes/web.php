@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ValidasiJawabanController;
 use App\Http\Controllers\ManagerArea\ManagerHasilController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Admin\ProgressBarController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
@@ -44,8 +45,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/indikator/template/publish', [TemplateController::class, 'bulkPublish'])->name('indikator.template.publish');
         Route::post('/indikator/template/copy', [TemplateController::class, 'copyTemplate'])->name('indikator.template.copy');
 
-        Route::get('/sub-area/pemenuhan', [AdminController::class, 'showPemenuhan'])->name('admin.sub-area.pemenuhan');
-        Route::get('/sub-area/reform', [AdminController::class, 'showReform'])->name('admin.sub-area.reform');
+      Route::get('/sub-area/pemenuhan', [ProgressBarController::class, 'index'])->name('admin.sub-area.pemenuhan')->defaults('kategori', 'pemenuhan');
+Route::get('/sub-area/reform', [ProgressBarController::class, 'index'])->name('admin.sub-area.reform')->defaults('kategori', 'reform');
+
 
         Route::get('/validasi', [ValidasiJawabanController::class, 'index'])->name('admin.validasi.index');
         Route::post('/validasi', [ValidasiJawabanController::class, 'simpan'])->name('admin.validasi.simpan');

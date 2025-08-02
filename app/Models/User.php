@@ -12,26 +12,28 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    protected $fillable = [
-        'email', 'password', 'role', 'area_id',
-    ];
+    protected $fillable = ['email', 'password', 'role', 'area_id'];
 
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
-    
+    protected $hidden = ['password', 'remember_token'];
+
     const ROLE_ADMIN = 'admin';
     const ROLE_MANAGER = 'manager';
 
-    public function isAdmin() {
+    public function isAdmin()
+    {
         return $this->role === self::ROLE_ADMIN;
     }
 
-    public function isManager() {
+    public function isManager()
+    {
         return $this->role === self::ROLE_MANAGER;
     }
     public function area()
-{
-    return $this->belongsTo(\App\Models\Area::class);
+    {
+        return $this->belongsTo(\App\Models\Area::class);
+    }
+    public function jawabanIndikators()
+    {
+        return $this->hasMany(\App\Models\JawabanIndikator::class);
+    }
 }
-}   

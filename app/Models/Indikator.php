@@ -33,21 +33,21 @@ class Indikator extends Model
     }
 
     public function indikatorPeriodes()
-{
-    return $this->hasMany(IndikatorPeriode::class);
-}
+    {
+        return $this->hasMany(IndikatorPeriode::class);
+    }
 
     public function periodes()
     {
         return $this->belongsToMany(Periode::class, 'indikator_periode')->withPivot('published')->withTimestamps();
     }
 
-   public function publishedForPeriode($periodeId)
-{
-    return DB::table('indikator_periode')
-        ->where('indikator_id', $this->id)
-        ->where('periode_id', $periodeId)
-        ->value('published') === 1; 
+    public function publishedForPeriode($periodeId)
+    {
+        return DB::table('indikator_periode')->where('indikator_id', $this->id)->where('periode_id', $periodeId)->value('published') === 1;
+    }
+    public function periodeAktif()
+    {
+        return $this->hasMany(\App\Models\IndikatorPeriode::class)->where('published', true);
+    }
 }
-
-} 

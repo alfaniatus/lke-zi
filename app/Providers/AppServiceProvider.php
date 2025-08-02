@@ -24,33 +24,30 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-       View::composer('*', function ($view) {
-            // ⏳ Master Periode Default (2025)
+        View::composer('*', function ($view) {
             $masterPeriode = Periode::where('tahun', 2025)->first();
             $view->with('masterPeriode', $masterPeriode);
 
-            // ✅ Hanya lanjut jika user sudah login
+            $currentArea = Request::route('area');
+            $currentKategori = Request::route('kategori');
+
+            $view->with('currentArea', $currentArea);
+            $view->with('currentKategori', $currentKategori);
             if (Auth::check()) {
                 $user = Auth::user();
                 $role = $user->role;
-                $area = $user->area; // relasi area
+                $area = $user->area;
                 $areaId = $user->area_id;
 
-                // 🔧 Ambil angka setelah "Area " dari nama area
                 $areaUser = $area?->name ? Str::after(strtolower($area->name), 'area ') : null;
 
                 $routeName = Request::route()?->getName();
 
-                // 🧭 Sidebar active detection
                 $indikatorActive = Str::startsWith($routeName, 'indikator.') || Str::startsWith($routeName, 'admin.indikator');
                 $validasiActive = Str::startsWith($routeName, 'validasi.') || Str::startsWith($routeName, 'admin.validasi');
                 $dashboardActive = $routeName === ($role === 'admin' ? 'admin.dashboard' : 'manager-area.dashboard');
 
-                // 📦 Share ke semua view
-                $view->with(compact(
-                    'user', 'role', 'area', 'areaId', 'areaUser',
-                    'routeName', 'indikatorActive', 'dashboardActive', 'validasiActive'
-                ));
+                $view->with(compact('user', 'role', 'area', 'areaId', 'areaUser', 'routeName', 'indikatorActive', 'dashboardActive', 'validasiActive'));
             }
         });
     }
